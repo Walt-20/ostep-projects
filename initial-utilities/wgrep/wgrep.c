@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void search_file(const char *filename, const char *search_term) {
+  FILE *fp = fopen(filename, "r");
+  if (fp == NULL) {
+    printf("wgrep: cannot open file\n");
+    exit(1);
+  }
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t read;
+
+  // loop through lines in file
+  while((read = getline(&line, &len, fp)) != -1) {
+    if (strstr(line, search_term) != NULL) {
+      printf("%s", line);
+    }
+  }
+  free(line);
+  fclose(fp);
+}
+
+int main(int argc, char *argv[]) {
+  // when no arguments are passed
+  if (argc == 1) {
+    printf("wgrep: searchterm [file ...]\n");
+    exit(1);
+  }
+  // point to search term
+  const char *search_term = argv[1];
+  // check that there is a search term
+  if (strlen(search_term) == 0) {
+    exit(0);
+  }
+  // if the proper amount of arguments are there
+  if (argc == 2) {
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    // reading from standard in
+    while((read = getline(&line, &len, stdin)) != -1) {
+      if (strstr(line, search_term) != NULL) {
+	printf("%s", line);
+      }
+    }
+
+    free(line);
+    exit(0);
+  }
+  // loop through files within argc
+  for (int i = 2; i < argc; i++) {
+    search_file(argv[i], search_term);
+  }
+  
+  exit(0);
+}
